@@ -1,0 +1,25 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_DEFAULT_REGION = 'us-east-1'
+        AWS_ACCESS_KEY_ID     = credentials('madhan')
+        AWS_SECRET_ACCESS_KEY = credentials('Madhan95@')
+        ECR_REPO = 'jen-1'
+        DOCKER_IMAGE = 'nginix'
+        DOCKER_TAG = 'latest'
+    }
+
+    stages {
+        stage('Build and Push Docker Image to ECR') {
+            steps {
+                script {
+                    sh 'eval $(aws ecr get-login --no-include-email)'
+                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                    sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPO}:${DOCKER_TAG}"
+                    sh "docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPO}:${DOCKER_TAG}"
+                }
+            }
+        }
+    }
+}
